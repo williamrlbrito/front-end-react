@@ -1,11 +1,10 @@
 import React, { useCallback, useRef } from 'react';
-import { FiLogIn, FiMail, FiLock } from 'react-icons/fi';
+import { FiLogIn, FiMail } from 'react-icons/fi';
 import { FormHandles } from '@unform/core';
 import { Form } from '@unform/web';
 import * as Yup from 'yup';
 import { Link, useHistory } from 'react-router-dom';
 
-import { useAuth } from '../../hooks/auth';
 import { useToast } from '../../hooks/toast';
 import getValidationErrors from '../../utils/getValidationErrors';
 
@@ -16,40 +15,34 @@ import Input from '../../components/Input';
 
 import { Container, Content, AnimationContainer, Background } from './styles';
 
-interface SingInFormData {
+interface ForgotPasswordFormData {
   email: string;
-  password: string;
 }
 
-const SignIn: React.FC = () => {
+const ForgotPassword: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
 
-  const { singIn } = useAuth();
   const { addToast } = useToast();
   const history = useHistory();
 
   const handleSubmit = useCallback(
-    async (data: SingInFormData) => {
+    async (data: ForgotPasswordFormData) => {
       try {
         formRef.current?.setErrors({});
 
         const schema = Yup.object().shape({
           email: Yup.string()
-            .required('E-mail obrigatorio')
-            .email('Digite um e-mail valido'),
-          password: Yup.string().required('Senha obrigatoria'),
+            .required('Email required')
+            .email('Enter a valid email address'),
         });
 
         await schema.validate(data, {
           abortEarly: false,
         });
 
-        const { email, password } = data;
+        const { email } = data;
 
-        await singIn({
-          email,
-          password,
-        });
+        /* recover password */
 
         history.push('/dashboard');
       } catch (err) {
@@ -61,12 +54,13 @@ const SignIn: React.FC = () => {
 
         addToast({
           type: 'error',
-          title: 'Erro no login',
-          description: 'Ocorreu um erro ao fazer login, cheque as credenciais.',
+          title: 'Password recovery error',
+          description:
+            'An error occurred while trying to perform password recovery, try again',
         });
       }
     },
-    [singIn, addToast, history],
+    [addToast, history],
   );
 
   return (
@@ -76,7 +70,7 @@ const SignIn: React.FC = () => {
           <img src={logoImg} alt="GoBarber" />
 
           <Form ref={formRef} onSubmit={handleSubmit}>
-            <h1>Faca seu logon</h1>
+            <h1>Recover Password</h1>
 
             <Input
               name="email"
@@ -85,21 +79,12 @@ const SignIn: React.FC = () => {
               placeholder="E-mail"
             />
 
-            <Input
-              name="password"
-              icon={FiLock}
-              type="password"
-              placeholder="Senha"
-            />
-
-            <Button type="submit">Entrar</Button>
-
-            <Link to="/forgot-password">Esqueci minha senha</Link>
+            <Button type="submit">Recover</Button>
           </Form>
 
-          <Link to="/signup">
+          <Link to="/">
             <FiLogIn />
-            Criar conta
+            Back to login
           </Link>
         </AnimationContainer>
       </Content>
@@ -109,4 +94,4 @@ const SignIn: React.FC = () => {
   );
 };
 
-export default SignIn;
+export default ForgotPassword;
